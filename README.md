@@ -24,8 +24,8 @@ A comprehensive end-to-end test automation framework for Solflare wallet managem
 ### 1. Clone the Repository
 
 ```bash
-git clone <https://github.com/civonavets/solflare-tests-wdio.git>
-cd solflare-wallet-wdio-tests
+git clone https://github.com/civonavets/solflare-tests-wdio.git
+cd solflare-wdio-tests
 ```
 
 ### 2. Install Dependencies
