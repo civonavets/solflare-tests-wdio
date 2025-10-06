@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# WebdriverIO
+screenshots/
+errorShots/
+allure-results/
+allure-report/
+logs/
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+
+# Test artifacts
+test-results/
+reports/
+coverage/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+Thumbs.db
