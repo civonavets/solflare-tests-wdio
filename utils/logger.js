@@ -9,7 +9,7 @@ const fs = require('fs');
  * - Multiple log levels (error, warn, info, debug)
  * - Console output with colors
  * - File output with timestamps
- * - Separate error log file
+ * - Error log file created only when errors occur
  * - Timestamped log files
  */
 
@@ -54,8 +54,11 @@ const fileFormat = winston.format.combine(
 );
 
 /**
- * Create Winston logger instance
+ * Create Winston logger instance with lazy error file transport
  */
+let errorTransport = null;
+let hasErrors = false;
+
 const logger = winston.createLogger({
     level: process.env.LOG_LEVEL || 'info', // Default to 'info', can be overridden
     transports: [
@@ -69,16 +72,26 @@ const logger = winston.createLogger({
             filename: path.join(logsDir, logFileName),
             format: fileFormat,
             level: 'debug' // Log everything to file
-        }),
+        })
         
-        // File transport - errors only
-        new winston.transports.File({
+        // Note: Error file transport is added lazily when first error is logged
+    ]
+});
+
+/**
+ * Add error file transport on first error
+ */
+function ensureErrorTransport() {
+    if (!errorTransport && !hasErrors) {
+        hasErrors = true;
+        errorTransport = new winston.transports.File({
             filename: path.join(logsDir, errorLogFileName),
             format: fileFormat,
             level: 'error'
-        })
-    ]
-});
+        });
+        logger.add(errorTransport);
+    }
+}
 
 /**
  * Custom logging methods with consistent formatting
@@ -104,6 +117,7 @@ class Logger {
         if (passed) {
             logger.info(`✅ TEST PASSED: ${testName}`);
         } else {
+            ensureErrorTransport(); // Create error log only when test fails
             logger.error(`❌ TEST FAILED: ${testName}`);
         }
         logger.info('═'.repeat(70));
@@ -155,6 +169,7 @@ class Logger {
      * @param {Error} error - Error object (optional)
      */
     error(message, error = null) {
+        ensureErrorTransport(); // Create error log file when error is logged
         if (error) {
             logger.error(`${message}\nError: ${error.message}\nStack: ${error.stack}`);
         } else {
