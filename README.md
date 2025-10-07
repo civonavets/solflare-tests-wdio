@@ -1,13 +1,14 @@
 # Solflare Wallet WebdriverIO Test Suite
 
-A comprehensive end-to-end test automation framework for Solflare wallet management using WebdriverIO with Page Object Model pattern.
+A comprehensive end-to-end test automation framework for Solflare wallet management using WebdriverIO with Page Object Model pattern and Service Object Pattern for API testing.
 
 ## ✨ Features
 
 - ✅ **Cross-Browser Testing**: Chrome & Firefox support with command-line selection
 - ✅ **WebdriverIO Framework**: Industry-standard E2E testing
-- ✅ **API Testing**: Axios + Mocha + Chai for REST API validation
-- ✅ **Page Object Model**: Maintainable and reusable test structure
+- ✅ **API Testing**: Service Object Pattern with Axios + Mocha + Chai
+- ✅ **Page Object Model**: Maintainable and reusable UI test structure
+- ✅ **Service Object Pattern**: Clean, minimal API test architecture
 - ✅ **Headed & Headless Modes**: Flexible execution options
 - ✅ **Logger Framework**: Winston-based logging with file output and emojis
 - ✅ **Screenshot Module**: Generic screenshot creation on failures and manual captures
@@ -60,6 +61,10 @@ wdio run wdio.conf.js --browser=firefox
 ```bash
 npm run test:api           # API tests only
 npm run test:all           # API + UI tests
+
+# Run specific test files
+npx mocha test/api/specs/solflare.portfolio.spec.js
+npx mocha test/api/specs/solflare.negative.spec.js
 ```
 
 ## 📸 Screenshots
@@ -103,8 +108,14 @@ logger.debug('Debug data', { key: 'value' });
 solflare-wallet-wdio-tests/
 ├── test/
 │   ├── api/                      # API test files
-│   │   └── portfolioApi.spec.js
-│   ├── pageobjects/              # Page Object Model
+│   │   ├── clients/              # API service layer
+│   │   │   └── SolflareApiClient.js
+│   │   ├── helpers/              # Business logic layer
+│   │   │   └── PortfolioValidator.js
+│   │   └── specs/                # API test scenarios
+│   │       ├── solflare.portfolio.spec.js
+│   │       └── solflare.negative.spec.js
+│   ├── pageobjects/              # Page Object Model (UI)
 │   │   ├── OnboardingPage.js
 │   │   └── WalletManagementPage.js
 │   └── specs/                    # UI test specs
@@ -132,6 +143,13 @@ Validates recovery phrase list contains original and newly added wallets.
 
 ### API Tests: Portfolio Validation
 
+Built with **Service Object Pattern** for clean, maintainable API tests.
+
+**Architecture:**
+- **SolflareApiClient** - API endpoint calls
+- **PortfolioValidator** - Calculations & validations
+- **Test Specs** - Test scenarios only
+
 **Test 1: Portfolio Value Calculation**
 - Validates token totals match API values
 - Verifies tokensValue + stocksValue = total
@@ -139,6 +157,25 @@ Validates recovery phrase list contains original and newly added wallets.
 **Test 2: Net Worth Aggregation**
 - Tests multi-wallet balance aggregation
 - Validates POST endpoint accuracy
+
+**Test 3: Negative & Edge Cases**
+- Cross-network testing (mainnet, devnet, testnet)
+- Invalid addresses and parameters
+- Malformed request bodies
+
+**Example:**
+```javascript
+it('validates portfolio', async () => {
+    const portfolio = await api.getPortfolio(address);
+    const { tokens, value } = portfolio;
+    
+    validator.assertMatch(
+        PortfolioValidator.tokenValue(tokens),
+        value.total,
+        'Total Value'
+    );
+});
+```
 
 ## ⚙️ Configuration
 
@@ -170,9 +207,20 @@ const testConfig = {
 };
 ```
 
+### API Configuration
+
+Edit `test/api/clients/SolflareApiClient.js`:
+
+```javascript
+constructor(baseUrl = 'https://wallet-api.solflare.com') {
+    this.baseUrl = baseUrl;
+}
+```
+
 ## 🔧 Adding Tests
 
-**UI Test:**
+### UI Test
+
 ```javascript
 // test/specs/newTest.spec.js
 const OnboardingPage = require('../pageobjects/OnboardingPage');
@@ -187,21 +235,45 @@ describe('New Test', () => {
 });
 ```
 
-**API Test:**
+### API Test
+
 ```javascript
-// test/api/newTest.spec.js
-const axios = require('axios');
-const { expect } = require('chai');
+// test/api/specs/newTest.spec.js
+const SolflareApiClient = require('../clients/SolflareApiClient');
+const PortfolioValidator = require('../helpers/PortfolioValidator');
 
 describe('New API Test', () => {
-    it('should test endpoint', async () => {
-        const response = await axios.get('https://api.example.com');
-        expect(response.status).to.equal(200);
+    let api, validator;
+
+    before(() => {
+        api = new SolflareApiClient();
+        validator = new PortfolioValidator(0.01);
+    });
+
+    it('validates something', async () => {
+        const data = await api.getPortfolio(address);
+        validator.assertMatch(actual, expected, 'Label');
     });
 });
 ```
 
-## 🐛 Debugging
+### Adding New API Endpoints
+
+```javascript
+// In SolflareApiClient.js
+async getTransactions(address, limit = 10) {
+    const { data } = await axios.get(
+        `${this.baseUrl}/v3/transactions/${address}`,
+        { 
+            headers: this.headers,
+            params: { limit }
+        }
+    );
+    return data;
+}
+```
+
+## 🛠 Debugging
 
 **View Logs:**
 ```bash
@@ -237,6 +309,7 @@ jobs:
           node-version: '22'
       - run: npm install
       - run: npm run test:chrome:headless
+      - run: npm run test:api
       - uses: actions/upload-artifact@v3
         if: failure()
         with:
@@ -247,24 +320,24 @@ jobs:
 ## 📊 Test Output
 
 ```
-══════════════════════════════════════════════════════════════════════
+═══════════════════════════════════════════════════════════════════
 🎯 WebdriverIO Test Suite Starting
-══════════════════════════════════════════════════════════════════════
+═══════════════════════════════════════════════════════════════════
 Browser: CHROME
 Mode: Headed
 Base URL: https://solflare.com
-══════════════════════════════════════════════════════════════════════
+═══════════════════════════════════════════════════════════════════
 
 🧪 Starting: Wallet Management - Recovery Phrase
 
-📍 Starting onboarding flow
+📝 Starting onboarding flow
 ✓ Clicked "I need a new wallet" button
 ✓ Read recovery phrase (24 words)
 ✓ Entered recovery phrase (typed, not pasted)
 ✓ Onboarding completed successfully
 
 ✅ TEST PASSED: Wallet Management - Recovery Phrase Validation
-══════════════════════════════════════════════════════════════════════
+═══════════════════════════════════════════════════════════════════
 ```
 
 ## 🎓 Key Features Explained
@@ -281,14 +354,22 @@ Automatic logging with timestamped files, console colors, and emojis for clarity
 ### Screenshot Module
 Generic module captures screenshots on failure and allows manual captures at any test step.
 
-### Page Object Model
-Maintainable structure separates page logic from test logic.
+### Page Object Model (UI Tests)
+Maintainable structure separates page logic from test logic for UI tests.
+
+### Service Object Pattern (API Tests)
+Clean separation of concerns for API testing:
+- **API Client** - HTTP requests only
+- **Validator** - Business logic and assertions
+- **Test Specs** - Pure test scenarios
+
 
 ## 📚 Resources
 
 - [WebdriverIO Docs](https://webdriver.io/docs/gettingstarted)
 - [Mocha Framework](https://mochajs.org/)
 - [Chai Assertions](https://www.chaijs.com/)
+- [Service Object Pattern Guide](./test/api/README.md)
 
 ## 📄 License
 
