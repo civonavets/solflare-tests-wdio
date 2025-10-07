@@ -4,8 +4,12 @@
   "description": "WebdriverIO tests for Solflare wallet management",
   "scripts": {
     "test": "wdio run wdio.conf.js",
-    "test:headless": "wdio run wdio.conf.js --headless",
+    "test:chrome": "wdio run wdio.conf.js --browser=chrome",
+    "test:firefox": "wdio run wdio.conf.js --browser=firefox",
+    "test:chrome:headless": "wdio run wdio.conf.js --browser=chrome --headless",
+    "test:firefox:headless": "wdio run wdio.conf.js --browser=firefox --headless",
     "test:headed": "wdio run wdio.conf.js",
+    "test:headless": "wdio run wdio.conf.js --headless",
     "test:api": "mocha test/api/**/*.spec.js --timeout 30000",
     "test:all": "npm run test:api && npm test"
   },
@@ -17,8 +21,11 @@
     "axios": "^1.7.7",
     "chai": "^4.5.0",
     "chromedriver": "140.0.0",
+    "geckodriver": "^4.0.0",
     "mocha": "^10.8.2",
-    "wdio-chromedriver-service": "^8.1.1"
+    "wdio-chromedriver-service": "^8.1.1",
+    "wdio-geckodriver-service": "^5.0.1",
+    "winston": "^3.11.0"
   },
   "engines": {
     "node": ">=22.0.0"
@@ -27,7 +34,8 @@
     "webdriverio",
     "solflare",
     "e2e",
-    "testing"
+    "testing",
+    "cross-browser"
   ],
   "author": "",
   "license": "ISC"

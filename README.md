@@ -4,435 +4,231 @@ A comprehensive end-to-end test automation framework for Solflare wallet managem
 
 ## ✨ Features
 
+- ✅ **Cross-Browser Testing**: Chrome & Firefox support with command-line selection
 - ✅ **WebdriverIO Framework**: Industry-standard E2E testing
 - ✅ **API Testing**: Axios + Mocha + Chai for REST API validation
 - ✅ **Page Object Model**: Maintainable and reusable test structure
 - ✅ **Headed & Headless Modes**: Flexible execution options
-- ✅ **Automatic Screenshots**: Failure screenshots for debugging
-- ✅ **Detailed Logging**: Console output with emojis for clarity
-- ✅ **Chrome Browser Support**: Cross-browser ready architecture
+- ✅ **Logger Framework**: Winston-based logging with file output and emojis
+- ✅ **Screenshot Module**: Generic screenshot creation on failures and manual captures
+- ✅ **No Local Dependencies**: Tests run on any machine
 
 ## 📋 Prerequisites
 
-- **Node.js**: Version 18 or higher
+- **Node.js**: Version 22 or higher
 - **npm**: Comes with Node.js
-- **Google Chrome**: Latest version
-- **Git**: For version control
+- **Chrome or Firefox**: Latest version
 
-## 🚀 Installation
-
-### 1. Clone the Repository
+## 🚀 Quick Start
 
 ```bash
+# Clone and install
 git clone https://github.com/civonavets/solflare-tests-wdio.git
-cd solflare-wdio-tests
-```
-
-### 2. Install Dependencies
-
-```bash
+cd solflare-tests-wdio
 npm install
-```
 
-This will install:
-- WebdriverIO CLI and runner
-- Mocha test framework
-- Chrome driver
-- Spec reporter
+# Run tests
+npm test                    # Chrome headed mode (default)
+npm run test:firefox        # Firefox headed mode
+npm run test:chrome:headless # Chrome headless mode
+npm run test:api            # API tests only
+```
 
 ## 🎯 Running Tests
 
-### Headed Mode (Default - Browser Visible)
+### Browser Selection
 
 ```bash
+# Chrome (default)
 npm test
+npm run test:chrome
+
+# Firefox
+npm run test:firefox
+
+# Headless modes
+npm run test:chrome:headless
+npm run test:firefox:headless
+
+# Command line style
+wdio run wdio.conf.js --browser=chrome --headless
+wdio run wdio.conf.js --browser=firefox
 ```
 
-or
+### API Testing
 
 ```bash
-npm run test:headed
+npm run test:api           # API tests only
+npm run test:all           # API + UI tests
 ```
 
-This will:
-- Launch Chrome browser with visible UI
-- Execute the wallet management test
-- Display real-time progress in console
-- Save screenshots on failure
+## 📸 Screenshots
 
-### Headless Mode (Background Execution)
+**Automatic on Failure:**
+- Location: `./screenshots/`
+- Format: `Test_Name_FAILED_YYYY-MM-DD_HH-mm-ss.png`
+- No code needed - captured automatically
 
-```bash
-npm run test:headless
+**Manual Capture:**
+```javascript
+const screenshot = require('../../utils/screenshotHelper');
+
+it('should test something', async () => {
+    await screenshot.capture('step_name');           // Basic capture
+    await screenshot.captureWithName('custom_name'); // Custom filename
+    await screenshot.captureElement(element, 'name'); // Element screenshot
+});
 ```
 
-This will:
-- Run Chrome in headless mode (no UI)
-- Execute tests faster
-- Ideal for CI/CD pipelines
-- Still capture screenshots on failure
+## 📝 Logger
 
-### Direct WebdriverIO Commands
+**Built-in Winston Logger:**
+- Console output with colors and emojis
+- File logging to `./logs/`
+- Separate error log file
 
-```bash
-# Headed mode
-npx wdio run wdio.conf.js
+**Usage in Tests:**
+```javascript
+const logger = require('../../utils/logger');
 
-# Headless mode
-npx wdio run wdio.conf.js --headless
-```
-
-## 🌐 API Testing
-
-### Running API Tests
-
-```bash
-# Run API tests only
-npm run test:api
-
-# Run all tests (API + UI)
-npm run test:all
-```
-
-### API Test Scenarios
-
-The API test suite validates Solflare's wallet API endpoints:
-
-**Test Scenario 1: Portfolio Value Validation**
-- Validates calculated token totals match API-provided totals
-- Verifies total value equals sum of tokensValue and stocksValue
-- Tests both wallet addresses independently
-
-**Test Scenario 2: Balances Endpoint Validation**
-- Validates net worth calculation across multiple wallets
-- Verifies aggregated balances endpoint accuracy
-- Tests POST endpoint with multiple wallet addresses
-
-### API Test Output
-
-```
-🔍 Testing portfolio value for: 96Y3j66AX16noUAAVriW8bmwTGzV1PVqBKCEArPd5fuU
-✓ API request successful (200 OK)
-📊 Portfolio Summary:
-   - Total Value: $1,234.56
-   - Tokens Value: $1,234.56
-   - Stocks Value: $0.00
-   - Number of tokens: 15
-
-✓ Validation 1: Calculated vs API Total
-   ✅ Values match within tolerance ($0.01)
-
-✓ Validation 2: Total vs Combined (Tokens + Stocks)
-   ✅ Values match within tolerance ($0.01)
+logger.info('Test information');
+logger.step('Step completed');
+logger.error('Error occurred', error);
+logger.debug('Debug data', { key: 'value' });
 ```
 
 ## 📁 Project Structure
 
 ```
 solflare-wallet-wdio-tests/
-│
 ├── test/
 │   ├── api/                      # API test files
-│   │   └── portfolioApi.spec.js  # Portfolio API tests
-│   │
-│   ├── pageobjects/              # Page Object Model files
-│   │   ├── OnboardingPage.js     # Onboarding flow page object
-│   │   └── WalletManagementPage.js # Wallet management page object
-│   │
-│   └── specs/                    # UI test specification files
-│       └── walletManagement.spec.js # Main UI test suite
-│
-├── screenshots/                  # Failure screenshots (auto-generated)
-│
-├── wdio.conf.js                 # WebdriverIO configuration
-├── package.json                 # NPM dependencies and scripts
-└── README.md                    # This file
+│   │   └── portfolioApi.spec.js
+│   ├── pageobjects/              # Page Object Model
+│   │   ├── OnboardingPage.js
+│   │   └── WalletManagementPage.js
+│   └── specs/                    # UI test specs
+│       └── walletManagement.spec.js
+├── utils/
+│   ├── logger.js                 # Logger utility
+│   └── screenshotHelper.js       # Screenshot module
+├── screenshots/                  # Auto-generated screenshots
+├── logs/                         # Log files
+├── wdio.conf.js                 # WebdriverIO config
+└── package.json
 ```
 
 ## 🧪 Test Scenarios
 
-### UI Test Case: Wallet Management - Recovery Phrase Validation
+### UI Test: Wallet Management
+Validates recovery phrase list contains original and newly added wallets.
 
-**Objective**: Verify that the recovery phrase list contains the original wallet and newly added wallets.
+**Flow:**
+1. Navigate to onboarding → Click "I need a new wallet"
+2. Extract recovery phrase → Save and verify
+3. Set password → Complete onboarding
+4. Add new wallet → Manage recovery phrase toggles
+5. Verify all wallets in list
 
-**Test Steps**:
+### API Tests: Portfolio Validation
 
-1. ✅ Navigate to https://solflare.com/onboard
-2. ✅ Click "I need a new wallet" button
-3. ✅ Read the recovery phrase (not copied)
-4. ✅ Click "I saved my recovery phrase"
-5. ✅ Enter recovery phrase (typed, not pasted)
-6. ✅ Click Continue
-7. ✅ Enter password in first field
-8. ✅ Enter same password in second field
-9. ✅ Click Continue
-10. ✅ Click "I agree, let's go"
-11. ✅ Click Wallet management (Avatar in header)
-12. ✅ Verify Main Wallet is displayed
-13. ✅ Click "+ Add wallet"
-14. ✅ Click "Manage recovery phrase"
-15. ✅ Verify first toggle is disabled
-16. ✅ Verify first toggle is ON (checked)
-17. ✅ Select 3rd and 4th list items
-18. ✅ Click Save
+**Test 1: Portfolio Value Calculation**
+- Validates token totals match API values
+- Verifies tokensValue + stocksValue = total
 
-**Expected Result**:
-- Recovery phrase list contains: Main Wallet, newly added wallet (Talimi Banana), and toggle-generated wallets (Wallet 2, Wallet 3)
-
-### API Test Cases: Portfolio API Validation
-
-**Test Scenario 1: Total Portfolio Value Validation**
-
-**Objective**: Validate portfolio calculation accuracy for individual wallets.
-
-**Test Steps**:
-1. ✅ Send GET request to `/v3/portfolio/tokens/{address}`
-2. ✅ Extract tokens, value, tokensValue, and stocksValue from response
-3. ✅ Calculate total from individual token values
-4. ✅ Verify calculated total matches API's total value (within tolerance)
-5. ✅ Verify total equals tokensValue + stocksValue (within tolerance)
-6. ✅ Repeat for all test addresses
-
-**Expected Result**:
-- All calculations match within floating-point tolerance ($0.01)
-- Portfolio breakdown is mathematically consistent
-
-**Test Scenario 2: Balances Endpoint Validation**
-
-**Objective**: Validate net worth calculation across multiple wallets.
-
-**Test Steps**:
-1. ✅ Fetch portfolio value for first wallet
-2. ✅ Fetch portfolio value for second wallet
-3. ✅ Calculate expected net worth (sum of both portfolios)
-4. ✅ Send POST request to `/v2/portfolio/balances` with both addresses
-5. ✅ Verify netWorth equals sum of portfolio values (within tolerance)
-6. ✅ Verify netWorth equals sum of data array values (within tolerance)
-
-**Expected Result**:
-- Net worth accurately aggregates multiple wallet values
-- All validations pass within floating-point tolerance ($0.01)
-
-## 🏗️ Page Object Model
-
-### OnboardingPage.js
-
-Handles the complete wallet creation and onboarding flow:
-
-**Key Methods**:
-- `visit()` - Navigate to onboarding page
-- `clickNeedNewWallet()` - Start new wallet creation
-- `extractRecoveryPhrase()` - Read recovery phrase from UI
-- `enterRecoveryPhrase(phrase)` - Type recovery phrase
-- `enterPassword(password)` - Set wallet password
-- `completeOnboarding(password)` - Execute full flow
-
-### WalletManagementPage.js
-
-Manages wallet operations and recovery phrase settings:
-
-**Key Methods**:
-- `openWalletManagement()` - Open wallet menu
-- `verifyMainWallet()` - Validate main wallet exists
-- `addNewWallet(name)` - Create new wallet with name
-- `manageRecoveryPhraseToggles()` - Toggle wallet visibility
-- `verifyWalletsInList(names)` - Validate wallet list
+**Test 2: Net Worth Aggregation**
+- Tests multi-wallet balance aggregation
+- Validates POST endpoint accuracy
 
 ## ⚙️ Configuration
 
-### wdio.conf.js
+### Browser Settings
 
-Main configuration file for WebdriverIO:
-
-**Key Settings**:
-- **Browser**: Chrome (configurable for Firefox, Edge)
-- **Headless Mode**: Controlled via `--headless` flag
-- **Timeouts**: 10 seconds default, 60 seconds for tests
-- **Screenshots**: Auto-captured on test failure
-- **Window Size**: 1920x1080 (desktop viewport)
-
-**Modify Configuration**:
+Edit `wdio.conf.js` for customization:
 
 ```javascript
-// Change viewport size
-browser.setWindowSize(1366, 768);
-
 // Change timeout
 waitforTimeout: 15000
 
-// Add another browser
+// Change window size
+browser.setWindowSize(1366, 768)
+
+// Add more browsers
 capabilities: [{
-    browserName: 'firefox'
+    browserName: 'edge'
 }]
 ```
 
-## 📸 Screenshots
-
-Screenshots are automatically captured on test failures and saved to:
-
-```
-screenshots/
-└── Test_Name_FAILED.png
-```
-
-## 🐛 Debugging
-
-### Enable Debug Logs
-
-Edit `wdio.conf.js`:
-
-```javascript
-logLevel: 'debug'  // Change from 'info' to 'debug'
-```
-
-### Run in Headed Mode
-
-Always use headed mode when debugging:
-
-```bash
-npm run test:headed
-```
-
-This allows you to:
-- See browser actions in real-time
-- Inspect elements
-- Observe test failures visually
-
-### Common Issues
-
-**Issue**: Chrome driver version mismatch
-```bash
-# Solution: Update chromedriver
-npm install chromedriver@latest --save-dev
-```
-
-**Issue**: Test timeout
-```bash
-# Solution: Increase timeout in wdio.conf.js
-mochaOpts: {
-    timeout: 120000  // 2 minutes
-}
-```
-
-**Issue**: Element not found
-```bash
-# Solution: Increase wait time in test
-await element.waitForDisplayed({ timeout: 15000 });
-```
-
-## 🔧 Customization
-
-### Change UI Test Data
+### Test Data
 
 Edit `test/specs/walletManagement.spec.js`:
 
 ```javascript
 const testConfig = {
-    password: 'YourCustomPassword123!',
-    newWalletName: 'My Custom Wallet',
-    mainWalletName: 'Main Wallet'
+    password: 'YourPassword123!',
+    newWalletName: 'Custom Wallet'
 };
 ```
 
-### Change API Test Data
+## 🔧 Adding Tests
 
-Edit `test/api/portfolioApi.spec.js`:
-
-```javascript
-// Add or modify test wallet addresses
-const ADDRESSES = [
-    '96Y3j66AX16noUAAVriW8bmwTGzV1PVqBKCEArPd5fuU',
-    '7eXxD3vQww9cgBgD3gb7iqTriAzAmCBXFBMpdDi71P3i',
-    'YourWalletAddressHere'
-];
-
-// Adjust tolerance for calculations
-const TOLERANCE = 0.01; // In USD
-```
-
-### Add More Tests
-
-**UI Tests** - Create new spec files in `test/specs/`:
-
+**UI Test:**
 ```javascript
 // test/specs/newTest.spec.js
 const OnboardingPage = require('../pageobjects/OnboardingPage');
+const logger = require('../../utils/logger');
 
-describe('New Test Suite', () => {
+describe('New Test', () => {
     it('should do something', async () => {
+        logger.info('Starting test');
         await OnboardingPage.visit();
-        // Your test code
+        // Test code
     });
 });
 ```
 
-**API Tests** - Create new spec files in `test/api/`:
-
+**API Test:**
 ```javascript
-// test/api/newApiTest.spec.js
+// test/api/newTest.spec.js
 const axios = require('axios');
 const { expect } = require('chai');
 
-describe('New API Test Suite', () => {
-    it('should test new endpoint', async () => {
-        const response = await axios.get('https://api.example.com/endpoint');
+describe('New API Test', () => {
+    it('should test endpoint', async () => {
+        const response = await axios.get('https://api.example.com');
         expect(response.status).to.equal(200);
-        // Your assertions
     });
 });
 ```
 
-### Add More Page Objects
+## 🐛 Debugging
 
-Create new page objects in `test/pageobjects/`:
+**View Logs:**
+```bash
+cat logs/test-YYYY-MM-DD_HH-mm-ss.log
+```
 
+**Run Headed Mode:**
+```bash
+npm run test:chrome  # See browser actions in real-time
+```
+
+**Enable Debug Logs:**
 ```javascript
-// test/pageobjects/NewPage.js
-class NewPage {
-    get element() {
-        return $('[data-testid="element"]');
-    }
-    
-    async clickElement() {
-        await this.element.click();
-    }
-}
-
-module.exports = new NewPage();
-```
-
-## 📊 Test Reports
-
-Console output includes:
-- ✅ Passed steps (green checkmarks)
-- ❌ Failed steps (red X marks)
-- 🧪 Test execution details
-- ⏱️ Execution time
-
-Example output:
-```
-🧪 Running test: Verify that the recovery phrase list contains the original wallet and the newly added wallets
-
-📝 Starting onboarding flow...
-✓ Clicked "I need a new wallet" button
-✓ Read recovery phrase (24 words)
-✓ Entered recovery phrase (typed, not pasted)
-✓ Onboarding completed successfully
-
-✅ TEST COMPLETED SUCCESSFULLY
+// wdio.conf.js
+logLevel: 'debug'
 ```
 
 ## 🚦 CI/CD Integration
 
-### GitHub Actions Example
-
+**GitHub Actions:**
 ```yaml
-name: WebdriverIO Tests
+name: Tests
 
 on: [push, pull_request]
 
 jobs:
-  api-tests:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -440,17 +236,7 @@ jobs:
         with:
           node-version: '22'
       - run: npm install
-      - run: npm run test:api
-  
-  ui-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '22'
-      - run: npm install
-      - run: npm run test:headless
+      - run: npm run test:chrome:headless
       - uses: actions/upload-artifact@v3
         if: failure()
         with:
@@ -458,44 +244,56 @@ jobs:
           path: screenshots/
 ```
 
-## 🤝 Contributing
+## 📊 Test Output
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Follow naming conventions (camelCase for functions, PascalCase for classes)
-4. Comment your code
-5. Commit your changes (`git commit -m 'Add amazing feature'`)
-6. Push to the branch (`git push origin feature/amazing-feature`)
-7. Open a Pull Request
+```
+══════════════════════════════════════════════════════════════════════
+🎯 WebdriverIO Test Suite Starting
+══════════════════════════════════════════════════════════════════════
+Browser: CHROME
+Mode: Headed
+Base URL: https://solflare.com
+══════════════════════════════════════════════════════════════════════
 
-## 📝 Naming Conventions
+🧪 Starting: Wallet Management - Recovery Phrase
 
-Following JavaScript best practices:
+📍 Starting onboarding flow
+✓ Clicked "I need a new wallet" button
+✓ Read recovery phrase (24 words)
+✓ Entered recovery phrase (typed, not pasted)
+✓ Onboarding completed successfully
 
-- **Variables & Functions**: camelCase (`myVariable`, `doSomething()`)
-- **Classes**: PascalCase (`OnboardingPage`, `WalletManagementPage`)
-- **Constants**: UPPER_SNAKE_CASE (`MAX_RETRIES`, `DEFAULT_TIMEOUT`)
-- **Files**: camelCase for specs, PascalCase for page objects
-- **Private Methods**: Prefix with underscore (`_privateMethod()`)
+✅ TEST PASSED: Wallet Management - Recovery Phrase Validation
+══════════════════════════════════════════════════════════════════════
+```
+
+## 🎓 Key Features Explained
+
+### Cross-Browser Testing
+Run tests in Chrome or Firefox with a single flag:
+```bash
+wdio run wdio.conf.js --browser=firefox --headless
+```
+
+### Logger Framework
+Automatic logging with timestamped files, console colors, and emojis for clarity.
+
+### Screenshot Module
+Generic module captures screenshots on failure and allows manual captures at any test step.
+
+### Page Object Model
+Maintainable structure separates page logic from test logic.
+
+## 📚 Resources
+
+- [WebdriverIO Docs](https://webdriver.io/docs/gettingstarted)
+- [Mocha Framework](https://mochajs.org/)
+- [Chai Assertions](https://www.chaijs.com/)
 
 ## 📄 License
 
 MIT
 
-## 🆘 Support
-
-For issues or questions:
-1. Check the [Troubleshooting](#debugging) section
-2. Review WebdriverIO documentation: https://webdriver.io/
-3. Open an issue in the repository
-
-## 📚 Resources
-
-- [WebdriverIO Documentation](https://webdriver.io/docs/gettingstarted)
-- [Page Object Pattern](https://webdriver.io/docs/pageobjects/)
-- [Mocha Framework](https://mochajs.org/)
-- [Chrome DevTools](https://developer.chrome.com/docs/devtools/)
-
 ---
 
-**Happy Testing! 🎉**# solflare-wallet-tests-wdio
+**Happy Testing! 🎉**

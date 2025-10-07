@@ -1,5 +1,6 @@
 const OnboardingPage = require('../pageobjects/OnboardingPage');
 const WalletManagementPage = require('../pageobjects/WalletManagementPage');
+const logger = require('../../utils/logger');
 
 /**
  * Test Suite: Wallet Management - Recovery Phrase
@@ -16,7 +17,6 @@ describe('Wallet Management - Recovery Phrase', () => {
         password: 'superSecurePasswordBecauseImLazy@!$#',
         newWalletName: 'Talimi Banana',
         mainWalletName: 'Main Wallet',
-        // These wallets appear after selecting 3rd and 4th toggles in manage recovery phrase
         toggleGeneratedWallets: ['Wallet 2', 'Wallet 3']
     };
 
@@ -24,54 +24,48 @@ describe('Wallet Management - Recovery Phrase', () => {
      * Before each test: Navigate to onboarding page
      */
     beforeEach(async () => {
+        logger.debug('Test setup: Navigating to onboarding page');
         await OnboardingPage.visit();
     });
 
     /**
      * Test Case: Verify that the recovery phrase list contains the original wallet and the newly added wallets
-     * 
-     * Steps:
-     * 1. Complete wallet onboarding (create new wallet, set password)
-     * 2. Open wallet management
-     * 3. Verify Main Wallet is displayed
-     * 4. Add a new wallet with custom name
-     * 5. Manage recovery phrase toggles (select 3rd and 4th)
-     * 6. Verify all expected wallets are present in the list
-     * 
-     * Expected Result:
-     * - Recovery phrase list contains: Main Wallet, newly added wallet, and toggle-generated wallets
      */
     it('Verify that the recovery phrase list contains the original wallet and the newly added wallets', async () => {
-        // Step 1-10: Complete onboarding process
-        console.log('\n═══════════════════════════════════════════════════════');
-        console.log('🚀 TEST: Wallet Management - Recovery Phrase Validation');
-        console.log('═══════════════════════════════════════════════════════');
+        const testName = 'Wallet Management - Recovery Phrase Validation';
+        logger.testStart(testName);
         
-        await OnboardingPage.completeOnboarding(testConfig.password);
-        
-        // Step 11: Open wallet management (click avatar in header)
-        await WalletManagementPage.openWalletManagement();
-        
-        // Step 12: Verify Main Wallet is displayed
-        await WalletManagementPage.verifyMainWallet();
-        
-        // Step 13-14: Add new wallet
-        await WalletManagementPage.addNewWallet(testConfig.newWalletName);
-        
-        // Step 14-18: Manage recovery phrase toggles
-        await WalletManagementPage.manageRecoveryPhraseToggles();
-        
-        // Expected Result: Verify all wallets are in the recovery phrase list
-        const expectedWallets = [
-            testConfig.mainWalletName,
-            testConfig.newWalletName,
-            ...testConfig.toggleGeneratedWallets
-        ];
-        
-        await WalletManagementPage.verifyWalletsInList(expectedWallets);
-        
-        console.log('═══════════════════════════════════════════════════════');
-        console.log('✅ TEST COMPLETED SUCCESSFULLY');
-        console.log('═══════════════════════════════════════════════════════\n');
+        try {
+            // Step 1-10: Complete onboarding process
+            await OnboardingPage.completeOnboarding(testConfig.password);
+            
+            // Step 11: Open wallet management (click avatar in header)
+            await WalletManagementPage.openWalletManagement();
+            
+            // Step 12: Verify Main Wallet is displayed
+            await WalletManagementPage.verifyMainWallet();
+            
+            // Step 13-14: Add new wallet
+            await WalletManagementPage.addNewWallet(testConfig.newWalletName);
+            
+            // Step 14-18: Manage recovery phrase toggles
+            await WalletManagementPage.manageRecoveryPhraseToggles();
+            
+            // Expected Result: Verify all wallets are in the recovery phrase list
+            const expectedWallets = [
+                testConfig.mainWalletName,
+                testConfig.newWalletName,
+                ...testConfig.toggleGeneratedWallets
+            ];
+            
+            logger.debug('Expected wallets', { wallets: expectedWallets });
+            await WalletManagementPage.verifyWalletsInList(expectedWallets);
+            
+            logger.testEnd(testName, true);
+        } catch (error) {
+            logger.error('Test failed with error', error);
+            logger.testEnd(testName, false);
+            throw error;
+        }
     });
 });
